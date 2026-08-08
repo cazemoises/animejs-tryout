@@ -7,13 +7,33 @@
  * first stretch of real frames and demote if the machine cannot keep up. That
  * also catches the reverse case, a weak desktop that the static heuristics
  * would have promoted.
+ *
+ * The same "don't guess from a weak signal" logic applies to `mid` vs `low`:
+ * screen size says almost nothing about GPU capability — a 2016 iPhone SE and
+ * a current-generation phone can report a similar CSS viewport. Nearly every
+ * phone sold in the last several years can afford a *cheap* bloom pass, so
+ * touch devices default to `mid` (bloom on, at a capped internal resolution)
+ * rather than `low` (bloom off entirely), with the runtime FPS probe below as
+ * the actual backstop if that assumption turns out wrong for a given device.
+ * Only a screen small enough to suggest a genuinely old or unusual device
+ * skips straight to `low`.
  */
 
-export type Tier = 'high' | 'low'
+export type Tier = 'high' | 'mid' | 'low'
 
 export type TierSettings = {
   maxPixelRatio: number
   bloom: boolean
+  /**
+   * Cap, in CSS px on the long edge, for the resolution fed to the bloom pass
+   * — independent of `maxPixelRatio`, which scales the *whole* scene render.
+   * UnrealBloomPass builds a 5-level mip chain from this size; halving it
+   * roughly quarters the pixel cost of every blur pass in that chain, and
+   * bloom's inherent softness hides the resulting drop in internal resolution
+   * far better than it would hide on any sharp-edged geometry. Unused when
+   * `bloom` is false.
+   */
+  bloomResolutionCap: number
   shadows: boolean
   shadowMapSize: number
   burstParticles: number
@@ -23,10 +43,13 @@ export type TierSettings = {
   /**
    * Multiplier on the core's emissive colour.
    *
-   * The high tier deliberately drives the core past 1.0 so it clips — with
-   * bloom, clipping is what produces the spill that reads as light. Without
-   * bloom the same value is just a flat white ball with its facets erased, so
-   * the low tier stays inside the displayable range and keeps its shading.
+   * Tiers with bloom deliberately drive the linear input past 1.0 so it clips
+   * — with bloom, clipping is what produces the spill that reads as light.
+   * Without bloom, the low tier's value is chosen by the rendered pixel, not
+   * the linear input: Khronos PBR Neutral compresses highlights gently rather
+   * than clamping, so "does it clip" and "does the faceted shading stay
+   * legible" turn out to be different questions — see the measurement next to
+   * `low`'s value below.
    */
   coreEmissive: number
   /**
@@ -41,6 +64,7 @@ const SETTINGS: Record<Tier, TierSettings> = {
   high: {
     maxPixelRatio: 2,
     bloom: true,
+    bloomResolutionCap: 1600,
     shadows: true,
     shadowMapSize: 2048,
     burstParticles: 400,
@@ -52,16 +76,52 @@ const SETTINGS: Record<Tier, TierSettings> = {
     coreEmissive: 2.0,
     toneMapping: 'aces',
   },
-  low: {
+  mid: {
+    // Bloom stays on — see the module doc — everything else drops to the
+    // same cheap settings as `low`, since those costs are independent of
+    // bloom (DPR affects the whole render; shadow/particle counts are
+    // CPU/JS-side). Only bloom's own resolution gets a dedicated cap.
     maxPixelRatio: 1.5,
-    bloom: false,
+    bloom: true,
+    bloomResolutionCap: 640,
     shadows: true,
     shadowMapSize: 1024,
     burstParticles: 120,
     burstShards: 28,
     staggerGrid: [7, 5],
     orbitNodes: 5,
-    coreEmissive: 1.15,
+    coreEmissive: 2.0,
+    toneMapping: 'aces',
+  },
+  low: {
+    maxPixelRatio: 1.5,
+    bloom: false,
+    bloomResolutionCap: 480, // unused while bloom is off; kept for type symmetry
+    shadows: true,
+    shadowMapSize: 1024,
+    burstParticles: 120,
+    burstShards: 28,
+    staggerGrid: [7, 5],
+    orbitNodes: 5,
+    /**
+     * Measured against the rendered pixel, not the linear input value — the
+     * two diverge under Neutral's gentle highlight rolloff. At the core's
+     * projected screen position, brightest-pixel-in-a-12px-patch sRGB:
+     *
+     *   mult   pixel (r,g,b)     facets
+     *   1.15   ( 65,229,237)     crisp — the original value, read as dim
+     *   1.30   ( 74,234,242)     crisp
+     *   1.60   ( 90,239,246)     crisp — clearly more vivid than 1.15
+     *   1.90   (102,241,248)     starting to flatten
+     *   2.00   (106,242,249)     visibly flattened, reads as a uniform disc
+     *
+     * None of these hit true white even at 2.0 — Neutral compresses rather
+     * than clamps — so "does it clip" isn't the useful question here; "does
+     * the faceting stay legible" is, and it stops being true around 1.9.
+     * 1.6 is the most vivid value that's still unambiguously on the crisp
+     * side of that line.
+     */
+    coreEmissive: 1.6,
     toneMapping: 'neutral',
   },
 }
@@ -85,15 +145,22 @@ export type MotionProfile = {
 }
 
 function guessTier(): Tier {
-  // Primary signals: is this a touch-first device on a small viewport?
+  // Primary signals: is this a touch-first device?
   const coarsePointer = window.matchMedia('(pointer: coarse)').matches
   const noHover = window.matchMedia('(hover: none)').matches
   const touchPoints = navigator.maxTouchPoints ?? 0
   const shortEdge = Math.min(window.innerWidth, window.innerHeight)
   const longEdge = Math.max(window.innerWidth, window.innerHeight)
+  const handheld = (coarsePointer || noHover) && touchPoints > 0
 
-  const handheld = (coarsePointer || noHover) && touchPoints > 0 && longEdge < 1100
-  if (handheld) return 'low'
+  if (handheld) {
+    // A screen this small is the closest static proxy we have for "old or
+    // unusually constrained device" — genuinely small/ancient hardware, or an
+    // embedded webview. Everything bigger defaults to `mid`; a big tablet
+    // (long edge past phone territory) is desktop-class and gets `high`.
+    if (longEdge < 560 || shortEdge < 340) return 'low'
+    return longEdge < 1100 ? 'mid' : 'high'
+  }
 
   if (shortEdge < 560) return 'low'
 

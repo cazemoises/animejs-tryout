@@ -32,7 +32,17 @@ body {
   position: fixed;
   inset: 0;
   width: 100vw;
-  height: 100vh;
+  /*
+   * `--app-height` (set in stage.ts's resize(), from window.innerHeight) is
+   * the render resolution and the camera's aspect ratio's source of truth.
+   * Sizing these layers with raw `100vh` instead would let the CSS box
+   * diverge from that — on a real phone, `100vh` resolves against the large
+   * (toolbar-hidden) viewport while the render targets the small, currently
+   * visible one — stretching the canvas image and inflating the 3D object
+   * past the frame the camera math calculated as safe. The `100vh` fallback
+   * only covers the instant before the first resize() call.
+   */
+  height: var(--app-height, 100vh);
 }
 
 #stage {
@@ -497,6 +507,62 @@ body {
   .section[data-card='left'],
   .section[data-card='right'] {
     justify-content: center;
+  }
+
+  /*
+   * The mobile object lives in a band above the card, sized dynamically per
+   * section (see core/cardTracker.ts + camera.ts's layoutRegion). That budget
+   * has a floor, so a card tall enough to want the whole screen would still
+   * collide with it — measured before this block existed, some cards ran to
+   * 85-90% of a phone's viewport height (spring's two full demo lanes worst
+   * of all, at 713px on a 812px-tall screen). These rules aren't decorative
+   * resizing: they're what keeps every card inside the budget the dynamic
+   * region can actually honour.
+   */
+
+  /* 01 — smaller grid, so its footprint doesn't scale with the full card width */
+  .demo--grid {
+    max-width: 15rem;
+    margin-inline: auto;
+  }
+
+  /* 02 — lanes side by side instead of stacked; that alone roughly halves
+     the section's height, which stacking sliders would only claw back. */
+  .demo--spring {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+  }
+
+  /* A ~155px column is too narrow for name and readout on one baseline —
+     "ELÁSTICAK 120 · C 6" was running together. Stack them instead. */
+  .lane__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+
+  .lane__curve {
+    height: 1.7rem;
+  }
+
+  .lane__track {
+    height: 2.6rem;
+  }
+
+  .lane__controls {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  /* 03 — the seal was capping out at 16rem; a phone doesn't need it that big */
+  .seal {
+    width: min(60%, 11rem);
+  }
+
+  /* 05 / 06 — same fixed-height boxes, just shorter */
+  .beat--stage,
+  .arena {
+    height: 8rem;
   }
 }
 

@@ -19,10 +19,12 @@ if (!canvas || !app) throw new Error('missing #stage or #app')
 const params = new URLSearchParams(location.search)
 const debug = params.has('debug')
 
-// Dev affordance: `?tier=low` to inspect the degraded look on a desktop.
+// Dev affordance: `?tier=low|mid|high` to inspect a tier's look on a desktop.
 const forcedTier = import.meta.env.DEV ? params.get('tier') : null
 const motion = createMotionProfile(
-  forcedTier === 'low' || forcedTier === 'high' ? forcedTier : undefined,
+  forcedTier === 'low' || forcedTier === 'mid' || forcedTier === 'high'
+    ? forcedTier
+    : undefined,
 )
 
 const stage = createStage(canvas, motion.settings, { debug })
@@ -77,6 +79,13 @@ const sections = mountSections({
 // tracker has to re-measure before its first read.
 cards.refresh()
 
+// Web fonts can still be swapping in at this point (fallback metrics differ
+// from the real font's), which reflows card text after the measurement above
+// already ran — stale by a few percent of screen height, enough to show up as
+// the object's region overlapping a card by a point or two. One more refresh
+// once the real fonts are in place is cheap and closes that gap.
+document.fonts.ready.then(() => cards.refresh())
+
 /** Radians per second of drift the instrument keeps even when nothing scrolls. */
 const IDLE_RATE = 0.14
 /** How far a full flash pushes bloom above its resting strength. */
@@ -95,7 +104,16 @@ stage.onFrame((delta, elapsed) => {
     }
   }
 
-  if (!motion.reduced) idleSpin += delta * IDLE_RATE
+  // Idle spin exists so the instrument isn't "dead" on desktop when nothing is
+  // scrolling. On a touch tier scroll is already the primary interaction, and
+  // the justification doesn't carry over — so it's off there, not reduced.
+  //
+  // This is a taste/battery call, not a bug fix: the bounding sphere the
+  // camera frames against is centred on `spin`'s own rotation axis, so a
+  // rotation about it cannot change the enclosing sphere at all — measured
+  // directly (radius held at exactly 2.750 across 0°/45°/90°/180°/229° with
+  // the rig fully assembled) rather than assumed from the geometry alone.
+  if (!motion.reduced && motion.tier === 'high') idleSpin += delta * IDLE_RATE
 
   // The one value with two contributors, summed here rather than written twice.
   orrery.spin.rotation.y = idleSpin + THREE.MathUtils.degToRad(master.state.spin)
@@ -110,6 +128,12 @@ stage.onFrame((delta, elapsed) => {
   // under a card further down the page. The stylesheet pins every card to one
   // side in that mode, and the bias is pinned to match.
   stage.setCardBias(motion.reduced ? 1 : cards.bias())
+
+  // Portrait's per-section card top isn't tied to a left/right choice the way
+  // bias is, so there's nothing to pin under reduced motion: reading it once,
+  // via the single `renderOnce()` frame that path takes, already lands on
+  // whatever section is at the top of the page.
+  stage.setPortraitCardTop(cards.portraitCardTop())
 
   // The flash is consumed here, where whether a composer exists is known.
   burst.setProgress(burstState.progress)

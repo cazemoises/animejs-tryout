@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { FOV, hex } from '../core/tokens'
 import type { TierSettings } from '../core/motion'
 import {
+  DEFAULT_PORTRAIT_CARD_TOP,
   depthRange,
   fitFraming,
   fitClearance,
@@ -39,6 +40,12 @@ export type Stage = {
    * handover between sections slides the framing instead of jumping it.
    */
   setCardBias(bias: number): void
+  /**
+   * Portrait layout only: where the active section's card starts, as a
+   * fraction of screen height. Ignored by `layoutRegion` in landscape, so
+   * harmless to call unconditionally.
+   */
+  setPortraitCardTop(fraction: number): void
   /** 1 = closest fitted framing, >1 pulls back. Never goes below 1. */
   setDolly(multiplier: number): void
   /** 0 → 1 interpolation between the two background ink tones. */
@@ -165,6 +172,7 @@ export function createStage(
 
   let radius = PROVISIONAL_RADIUS
   let cardBias = 1
+  let portraitCardTop = DEFAULT_PORTRAIT_CARD_TOP
   let dolly = 1
   let framing: Framing = { distance: 12, offsetX: 0, offsetY: 0 }
 
@@ -247,7 +255,7 @@ export function createStage(
     const width = canvas.clientWidth || window.innerWidth
     const height = canvas.clientHeight || window.innerHeight
     const aspect = width / height
-    const region = layoutRegion(aspect, cardBias)
+    const region = layoutRegion(aspect, cardBias, portraitCardTop)
 
     framing = fitFraming(radius, FOV, aspect, region)
 
@@ -281,6 +289,24 @@ export function createStage(
   function resize(): void {
     const width = window.innerWidth
     const height = window.innerHeight
+
+    /**
+     * `--app-height`, not CSS `100vh`, is what the fixed background layers
+     * (`#stage`, `.vignette`, `#leaders` — see style.css) size themselves with.
+     *
+     * On a real phone `100vh` resolves against the *large* viewport (address
+     * bar hidden) while `window.innerHeight` — used right here for the render
+     * resolution and by `applyFraming` for the camera's aspect — tracks the
+     * *small*, currently-visible one. Measured with a simulated toolbar
+     * (LARGE 926 / SMALL 844, an iPhone-sized ~82px gap): a CSS-height canvas
+     * decoupled from this value gets stretched 1.10x vertically, inflating the
+     * 3D object visually past the frame `fitFraming` calculated as safe — the
+     * scene isn't wrong, the box displaying it is the wrong size. Driving the
+     * CSS box from this exact number closes that gap: canvas.clientHeight can
+     * no longer diverge from the drawing-buffer height, at any toolbar state.
+     */
+    document.documentElement.style.setProperty('--app-height', `${height}px`)
+
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, settings.maxPixelRatio))
     renderer.setSize(width, height, false)
     applyFraming()
@@ -311,6 +337,11 @@ export function createStage(
 
   const onResize = () => resize()
   window.addEventListener('resize', onResize, { passive: true })
+  // `window`'s own 'resize' has historically been inconsistent on mobile
+  // Safari specifically for toolbar-driven size changes; `visualViewport`'s
+  // resize event is the platform's purpose-built signal for exactly that and
+  // is a no-op safety net everywhere else.
+  window.visualViewport?.addEventListener('resize', onResize, { passive: true })
   resize()
 
   return {
@@ -342,6 +373,13 @@ export function createStage(
       cardBias = next
       // The region's centre moved, so the framing genuinely has to be resolved
       // again — but its width did not, so the fit guarantee still holds.
+      applyFraming()
+    },
+
+    setPortraitCardTop(fraction) {
+      const next = Math.min(1, Math.max(0, fraction))
+      if (Math.abs(next - portraitCardTop) < 1e-3) return
+      portraitCardTop = next
       applyFraming()
     },
 
@@ -408,6 +446,7 @@ export function createStage(
 
     dispose() {
       window.removeEventListener('resize', onResize)
+      window.visualViewport?.removeEventListener('resize', onResize)
       renderer.setAnimationLoop(null)
       renderer.dispose()
     },

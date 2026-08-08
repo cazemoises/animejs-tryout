@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  DEFAULT_PORTRAIT_CARD_TOP,
   DEFAULT_SAFETY,
   FULL_REGION,
   depthRange,
@@ -162,6 +163,50 @@ describe('layoutRegion', () => {
     expect(region.x).toEqual([-1, 1])
     expect(region.y[1]).toBe(1)
     expect(region.y[0]).toBeGreaterThan(-1)
+  })
+
+  it('fits the sphere in portrait across the whole range of measured card tops', () => {
+    // portraitCardTop is a live per-section DOM measurement (see
+    // core/cardTracker.ts), not a hand-picked constant — it can land anywhere
+    // from "card fills almost the whole screen" to "card barely dips in from
+    // the bottom." The fit guarantee has to hold everywhere in that range, not
+    // just at the DEFAULT_PORTRAIT_CARD_TOP the old static split used.
+    const cardTops = Array.from({ length: 21 }, (_, i) => i / 20)
+
+    for (const aspect of [0.42, 0.56, 0.75]) {
+      for (const cardTop of cardTops) {
+        const region = layoutRegion(aspect, 1, cardTop)
+        const framing = fitFraming(RADIUS, FOV, aspect, region)
+        const clearance = fitClearance(framing, RADIUS, FOV, aspect, region)
+        expect(clearance, `aspect ${aspect} @ cardTop ${cardTop.toFixed(2)}`)
+          .toBeGreaterThanOrEqual(0)
+      }
+    }
+  })
+
+  it('shrinks the object band as the card claims more of the screen, down to a floor', () => {
+    const heightAt = (cardTop: number) => {
+      const { y } = layoutRegion(0.56, 1, cardTop)
+      return y[1] - y[0]
+    }
+
+    // A card starting higher up (smaller cardTop) leaves less room, so the
+    // object's band should never be taller than one measured with a lower card.
+    const heights = [0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1].map(heightAt)
+    heights.reduce((previous, current) => {
+      expect(current).toBeGreaterThanOrEqual(previous - 1e-9)
+      return current
+    })
+
+    // Even a card claiming the entire screen (cardTop = 0) leaves the object
+    // its floor share, not nothing.
+    expect(heightAt(0)).toBeCloseTo(2 * 0.22, 10)
+  })
+
+  it('falls back to the documented default when no card top is measured yet', () => {
+    const withDefault = layoutRegion(0.56, 1)
+    const explicit = layoutRegion(0.56, 1, DEFAULT_PORTRAIT_CARD_TOP)
+    expect(withDefault).toEqual(explicit)
   })
 
   it('leaves the card side free in landscape', () => {

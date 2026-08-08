@@ -41,17 +41,33 @@ const BASE_STRENGTH = 0.4
 const RADIUS = 0.18
 const THRESHOLD = 0.95
 
+/**
+ * UnrealBloomPass builds its whole mip chain from whatever resolution it's
+ * given — it takes a plain `Vector2`, no separate "quality" knob — so the mid
+ * tier's cheap bloom is just this same pass fed a smaller number. Scaled to
+ * fit `cap` on the long edge, aspect preserved; the exact pixel count doesn't
+ * matter; bloom's own softness is what hides the reduced internal resolution.
+ */
+function cappedBloomResolution(width: number, height: number, cap: number): THREE.Vector2 {
+  const longEdge = Math.max(width, height)
+  const scale = Math.min(1, cap / longEdge)
+  return new THREE.Vector2(Math.round(width * scale), Math.round(height * scale))
+}
+
 export function createPost(stage: Stage, settings: TierSettings): Post | null {
   if (!settings.bloom) return null
 
-  const size = new THREE.Vector2(window.innerWidth, window.innerHeight)
-
   const composer = new EffectComposer(stage.renderer)
   composer.setPixelRatio(Math.min(window.devicePixelRatio, settings.maxPixelRatio))
-  composer.setSize(size.x, size.y)
+  composer.setSize(window.innerWidth, window.innerHeight)
 
   const renderPass = new RenderPass(stage.scene, stage.camera)
-  const bloomPass = new UnrealBloomPass(size, BASE_STRENGTH, RADIUS, THRESHOLD)
+  const bloomSize = cappedBloomResolution(
+    window.innerWidth,
+    window.innerHeight,
+    settings.bloomResolutionCap,
+  )
+  const bloomPass = new UnrealBloomPass(bloomSize, BASE_STRENGTH, RADIUS, THRESHOLD)
   // OutputPass applies tone mapping and colour space conversion at the end of
   // the chain; without it the composer would double-convert and wash out.
   const outputPass = new OutputPass()
@@ -63,7 +79,8 @@ export function createPost(stage: Stage, settings: TierSettings): Post | null {
   stage.setRenderOverride(() => composer.render())
   stage.onResize((width, height) => {
     composer.setSize(width, height)
-    bloomPass.setSize(width, height)
+    const resized = cappedBloomResolution(width, height, settings.bloomResolutionCap)
+    bloomPass.setSize(resized.x, resized.y)
   })
 
   return {

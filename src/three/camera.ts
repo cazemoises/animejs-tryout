@@ -162,6 +162,30 @@ export function depthRange(
 /** Fraction of the viewport width a desktop text card occupies. */
 const CARD_FRACTION = 0.42
 
+/**
+ * Default `portraitCardTop`: where the card starts, as a fraction of screen
+ * height, before a real per-section measurement is available (first frame,
+ * landscape, tests). Not load-bearing for correctness — every caller that
+ * matters passes a measured value — just a sane placeholder.
+ */
+export const DEFAULT_PORTRAIT_CARD_TOP = 0.54
+
+/**
+ * Gap kept between the object's lowest point and the card's measured top, so
+ * the two don't visually touch even when the fit is otherwise exact.
+ */
+const PORTRAIT_GAP = 0.03
+
+/**
+ * However tall a card gets, the object keeps at least this share of the
+ * screen. Below this the free region's height approaches zero, which sends
+ * `fitAxis`'s distance toward infinity — a floor here is not a style choice,
+ * it keeps the solve well-conditioned. A card taller than the budget this
+ * implies (see style.css's mobile block for the sections that needed their
+ * content trimmed to fit) will touch the object rather than the reverse.
+ */
+const MIN_PORTRAIT_OBJECT_SHARE = 0.22
+
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
 /**
@@ -169,7 +193,8 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t
  *
  * Desktop: a text card occupies a vertical strip on one side, so the orrery
  * lives in the opposite strip. Portrait: the card sits along the bottom, so the
- * orrery lives in the upper band and uses the full width.
+ * orrery lives in the upper band whose height is *measured*, not fixed — see
+ * below.
  *
  * `cardBias` is continuous — 0 puts the card fully left, 1 fully right — so
  * sections can hand the card from one side to the other and have the camera
@@ -178,13 +203,30 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t
  * throughout the handover, not just at the two ends: at bias 0.5 the region is
  * simply the middle 58% of the screen, which is genuinely free while both cards
  * are mid-crossfade.
+ *
+ * `portraitCardTop` is the mobile analogue of `cardBias`: where the *current*
+ * section's card starts, as a fraction of screen height (0 = top, 1 = bottom),
+ * fed in from `core/cardTracker.ts`'s live measurement. A single fixed split
+ * was tried first and measured against the built page — some sections' cards
+ * started 20-45 percentage points above where a static ~54% boundary assumed,
+ * because card height varies hugely with content (a hero's three lines of text
+ * versus a section with two full demo lanes are not the same shape). A fixed
+ * number cannot fit both without either cropping the tall ones or wasting
+ * space above the short ones.
  */
-export function layoutRegion(aspect: number, cardBias: number = 1): Region {
+export function layoutRegion(
+  aspect: number,
+  cardBias: number = 1,
+  portraitCardTop: number = DEFAULT_PORTRAIT_CARD_TOP,
+): Region {
   const isPortrait = aspect < 1.05
 
   if (isPortrait) {
-    // Card covers the bottom of the screen; content takes the upper band.
-    return { x: [-1, 1], y: [-0.08, 1] }
+    const budget = Math.max(
+      MIN_PORTRAIT_OBJECT_SHARE,
+      Math.min(1, portraitCardTop) - PORTRAIT_GAP,
+    )
+    return { x: [-1, 1], y: [1 - 2 * budget, 1] }
   }
 
   const bias = Math.min(1, Math.max(0, cardBias))

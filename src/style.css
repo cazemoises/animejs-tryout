@@ -1,0 +1,523 @@
+:root {
+  --ink: #07090f;
+  --ink-deep: #0d1424;
+  --cyan: #4de1e8;
+  --amber: #ffb347;
+  --text: #e8ecf2;
+  --muted: #8a94a6;
+
+  --font-sans: 'Space Grotesk Variable', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  --card-width: 42vw;
+  --gutter: clamp(1.5rem, 4vw, 4.5rem);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+#stage,
+.vignette,
+#leaders {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+#stage {
+  display: block;
+  z-index: 0;
+}
+
+.vignette {
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 90% at 50% 45%,
+    transparent 35%,
+    rgba(3, 5, 10, 0.5) 78%,
+    rgba(2, 3, 7, 0.88) 100%
+  );
+}
+
+#leaders {
+  z-index: 3;
+  pointer-events: none;
+}
+
+#app {
+  position: relative;
+  z-index: 2;
+}
+
+/* --- sections ------------------------------------------------------------ */
+
+.section {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding: 12vh var(--gutter);
+}
+
+.section[data-card='right'] {
+  justify-content: flex-end;
+}
+
+.section[data-card='left'] {
+  justify-content: flex-start;
+}
+
+.card {
+  width: min(var(--card-width), 34rem);
+  padding: clamp(1.5rem, 2.5vw, 2.5rem);
+  border: 1px solid rgba(138, 148, 166, 0.16);
+  border-radius: 4px;
+  background: rgba(7, 10, 18, 0.55);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+}
+
+.eyebrow {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.title {
+  margin: 0 0 1.5rem;
+  font-size: clamp(3rem, 9vw, 7rem);
+  font-weight: 500;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+}
+
+.heading {
+  margin: 0 0 1.25rem;
+  font-size: clamp(2rem, 4.5vw, 3.25rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.lede,
+.body {
+  margin: 0;
+  max-width: 38ch;
+  font-size: clamp(0.95rem, 1.1vw, 1.075rem);
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+/* --- section demos ------------------------------------------------------- */
+
+.demo {
+  margin-top: 1.75rem;
+}
+
+/* 01 — stagger grid */
+
+.demo--grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns, 13), 1fr);
+  aspect-ratio: var(--columns, 13) / var(--rows, 7);
+  touch-action: none;
+}
+
+/*
+ * The dot is deliberately smaller than its grid track: at peak scale it still
+ * has to fit inside the track, otherwise neighbouring cells merge and the
+ * whole grid reads as one solid block instead of a field.
+ */
+.cell {
+  place-self: center;
+  width: 56%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--cyan);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* 02 — spring lanes */
+
+.demo--spring {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.lane__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lane__name {
+  color: var(--text);
+}
+
+.lane__readout {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.lane__curve {
+  display: block;
+  width: 100%;
+  height: 2.4rem;
+  margin: 0.5rem 0 0.75rem;
+  overflow: visible;
+}
+
+.lane__curve polyline {
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+}
+
+.lane__track {
+  position: relative;
+  height: 3.5rem;
+  border: 1px dashed rgba(138, 148, 166, 0.22);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  touch-action: none;
+}
+
+.lane__ball {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #9ff4f8, var(--cyan) 60%, #167c85);
+  cursor: grab;
+  touch-action: none;
+}
+
+.lane__ball:active {
+  cursor: grabbing;
+}
+
+.lane__ball:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 3px;
+}
+
+.lane__controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.slider {
+  display: grid;
+  gap: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.slider input {
+  width: 100%;
+  accent-color: var(--cyan);
+}
+
+/* 03 — SVG seal */
+
+.demo--seal {
+  display: flex;
+  justify-content: center;
+}
+
+.seal {
+  width: min(100%, 16rem);
+  height: auto;
+  overflow: visible;
+}
+
+.seal-line {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  opacity: 0.75;
+}
+
+.seal-tick {
+  stroke: var(--muted);
+}
+
+.seal-shape {
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  transform-origin: 100px 100px;
+}
+
+/* 04 — leader lines and playhead */
+
+.leader__line {
+  fill: none;
+  stroke: rgba(77, 225, 232, 0.5);
+  stroke-width: 1;
+}
+
+.leader__dot {
+  fill: var(--cyan);
+}
+
+.leader__label {
+  fill: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.playhead {
+  height: 3px;
+  background: rgba(138, 148, 166, 0.18);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.playhead__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--amber));
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+.playhead__readout {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 05 — choreographed sequence */
+
+.beat--stage {
+  position: relative;
+  height: 11rem;
+  border: 1px solid rgba(138, 148, 166, 0.14);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.beat__rule,
+.beat__blob,
+.beat__tick,
+.beat__shard {
+  position: absolute;
+  display: block;
+}
+
+.beat__rule {
+  left: 10%;
+  right: 10%;
+  top: 50%;
+  height: 1px;
+  background: var(--muted);
+  transform-origin: 0 50%;
+}
+
+.beat__blob {
+  left: 50%;
+  top: 50%;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin: -1.625rem 0 0 -1.625rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 32%, #9ff4f8, var(--cyan) 62%, #12656d);
+}
+
+.beat__tick {
+  top: calc(50% - 1.4rem);
+  width: 1px;
+  height: 2.8rem;
+  background: var(--amber);
+  transform-origin: 50% 100%;
+}
+
+.beat__shard {
+  left: 50%;
+  top: 50%;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin: -0.275rem 0 0 -0.275rem;
+  background: var(--cyan);
+  border-radius: 1px;
+}
+
+/* 06 — burst arena */
+
+.arena {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 11rem;
+  appearance: none;
+  border: 1px dashed rgba(138, 148, 166, 0.24);
+  border-radius: 3px;
+  background: rgba(77, 225, 232, 0.02);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+.arena:hover:not(:disabled),
+.arena:focus-visible {
+  border-color: rgba(77, 225, 232, 0.5);
+  background: rgba(77, 225, 232, 0.05);
+}
+
+.arena:disabled {
+  cursor: default;
+}
+
+.arena__hint {
+  position: absolute;
+  inset: auto 0 0.75rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.shard {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin: -0.2rem 0 0 -0.2rem;
+  background: var(--cyan);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.shard--amber {
+  background: var(--amber);
+}
+
+/* --- code panel ---------------------------------------------------------- */
+
+.code {
+  margin-top: 1.75rem;
+  border-top: 1px solid rgba(138, 148, 166, 0.16);
+  padding-top: 1rem;
+}
+
+.code__toggle {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color 160ms ease;
+}
+
+.code__toggle:hover,
+.code__toggle:focus-visible {
+  color: var(--cyan);
+}
+
+.code__panel {
+  overflow: hidden;
+}
+
+.code__panel pre {
+  margin: 0.85rem 0 0;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  line-height: 1.7;
+  color: #b9c6d8;
+  tab-size: 2;
+}
+
+/* Split-text pieces need their own transform context and 3D depth. */
+.split-char,
+.split-word {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+}
+
+[data-split] {
+  perspective: 800px;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --card-width: 100%;
+  }
+
+  .section {
+    align-items: flex-end;
+    padding-bottom: 6vh;
+  }
+
+  .section[data-card='left'],
+  .section[data-card='right'] {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .split-char,
+  .split-word {
+    will-change: auto;
+  }
+
+  /*
+   * With no render loop the camera cannot follow a card that swaps sides, so
+   * every card is pinned to the same side and the framing computed once at
+   * load stays correct for the whole page. `main.ts` pins the bias to match.
+   */
+  .section[data-card='left'],
+  .section[data-card='right'] {
+    justify-content: flex-end;
+  }
+
+  /* Nothing should invite an interaction that will not animate. */
+  .arena {
+    cursor: default;
+  }
+}

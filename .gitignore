@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+*.tsbuildinfo
+
+# local env / editor
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# logs
+*.log
+npm-debug.log*
+
+# verification scratch: screenshots, headless probe scripts and captures made
+# while checking the scene render. Kept out of the repo on purpose — only real
+# source belongs in the history.
+scratch/
+scratchpad/
+screenshots/
+*.png
+*.jpeg
+!docs/**/*.png

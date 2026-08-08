@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ORRERY — vitrine anime.js</title>
+    <meta
+      name="description"
+      content="Vitrine de técnicas de animação com anime.js v4 e Three.js."
+    />
+  </head>
+  <body>
+    <canvas id="stage" aria-hidden="true"></canvas>
+    <div class="vignette" aria-hidden="true"></div>
+    <svg id="leaders" aria-hidden="true"></svg>
+
+    <main id="app">
+      <section class="section section--hero" data-card="right" id="hero">
+        <div class="card">
+          <p class="eyebrow">anime.js v4 · three.js</p>
+          <h1 class="title" data-split="chars">ORRERY</h1>
+          <p class="lede" data-split="words">
+            Um instrumento se monta enquanto você rola. Seis seções, seis
+            técnicas de animação, uma engrenagem por vez.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" data-card="left" data-technique="stagger" id="stagger">
+        <div class="card">
+          <p class="eyebrow">01 — stagger</p>
+          <h2 class="heading" data-split="words">Campo</h2>
+          <p class="body">
+            Dezenas de células coreografadas por uma linha só: primeiro uma onda
+            que parte do centro da grade, depois um campo contínuo que segue o
+            cursor.
+          </p>
+          <div class="demo demo--grid" data-demo="stagger"></div>
+        </div>
+      </section>
+
+      <section class="section" data-card="right" data-technique="spring" id="spring">
+        <div class="card">
+          <p class="eyebrow">02 — createSpring</p>
+          <h2 class="heading" data-split="words">Mola</h2>
+          <p class="body">
+            Arraste e solte. As duas massas voltam com física de mola de
+            verdade — mesma distância, temperamentos opostos.
+          </p>
+          <div class="demo demo--spring" data-demo="spring"></div>
+        </div>
+      </section>
+
+      <section class="section" data-card="left" data-technique="svg" id="svg">
+        <div class="card">
+          <p class="eyebrow">03 — createDrawable · morphTo</p>
+          <h2 class="heading" data-split="words">Selo</h2>
+          <p class="body">
+            O traço se desenha do zero e a forma central troca de identidade sem
+            corte. Passe o cursor por cima.
+          </p>
+          <div class="demo demo--seal" data-demo="svg"></div>
+        </div>
+      </section>
+
+      <section class="section" data-card="right" data-technique="scroll" id="sync">
+        <div class="card">
+          <p class="eyebrow">04 — onScroll</p>
+          <h2 class="heading" data-split="words">Sincronia</h2>
+          <p class="body">
+            A timeline inteira do instrumento está amarrada à barra de rolagem.
+            Cada peça entra no seu tempo, e o playhead abaixo mostra onde você
+            está nela.
+          </p>
+          <div class="demo demo--sync" data-demo="sync"></div>
+        </div>
+      </section>
+
+      <section class="section" data-card="left" data-technique="timeline" id="sequence">
+        <div class="card">
+          <p class="eyebrow">05 — createTimeline</p>
+          <h2 class="heading" data-split="words">Sequência</h2>
+          <p class="body">
+            Cinco formas se revezam em posições relativas, cada beat com o
+            easing que corresponde ao que ele representa.
+          </p>
+          <div class="demo demo--timeline" data-demo="timeline"></div>
+        </div>
+      </section>
+
+      <section class="section" data-card="right" data-technique="burst" id="burst">
+        <div class="card">
+          <p class="eyebrow">06 — random · stagger</p>
+          <h2 class="heading" data-split="words">Ruptura</h2>
+          <p class="body">
+            Clique. Dezenas de fragmentos partem com valores individuais
+            sorteados, e a luz da cena responde junto.
+          </p>
+          <div class="demo demo--burst" data-demo="burst"></div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

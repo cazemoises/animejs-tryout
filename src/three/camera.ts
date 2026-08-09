@@ -183,6 +183,15 @@ const PORTRAIT_GAP = 0.03
  * it keeps the solve well-conditioned. A card taller than the budget this
  * implies (see style.css's mobile block for the sections that needed their
  * content trimmed to fit) will touch the object rather than the reverse.
+ *
+ * That also happens briefly during an active scroll: `cardTracker.ts` reports
+ * a card's real, live position, which can pass through values well under this
+ * floor for a few frames as it slides through the middle of a transition
+ * (measured up to ~18-22 percentage points of nominal "overlap" against a
+ * card's true top at that instant). Checked visually rather than dismissed on
+ * the number alone: what actually shows there is the halo's soft glow easing
+ * off above the card, not solid geometry over text, and every *settled*
+ * section — the state a reader actually stops on — measures zero overlap.
  */
 const MIN_PORTRAIT_OBJECT_SHARE = 0.22
 

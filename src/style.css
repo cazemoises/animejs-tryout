@@ -138,6 +138,12 @@ body {
   margin-top: 1.75rem;
 }
 
+.demo--constellation {
+  min-height: 5rem;
+  border: 1px solid rgba(77, 225, 232, 0.14);
+  background: radial-gradient(circle, rgba(77, 225, 232, 0.08), transparent 68%);
+}
+
 /* 01 — stagger grid */
 
 .demo--grid {

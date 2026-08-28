@@ -11,9 +11,11 @@ import { createSvgSection, SVG_SNIPPET } from './03-svg'
 import { createScrollSyncSection, SCROLLSYNC_SNIPPET } from './04-scrollsync'
 import { createTimelineSection, TIMELINE_SNIPPET } from './05-timeline'
 import { createBurstSection, BURST_SNIPPET, type BurstState } from './06-burst'
+import { createBinaryConstellationSection, BINARY_CONSTELLATION_SNIPPET, type BinaryState } from './07-binary-constellation'
 import type { Section, SectionContext } from './types'
 
 export type { BurstState }
+export type { BinaryState }
 
 export type SectionDeps = {
   motion: MotionProfile
@@ -22,6 +24,8 @@ export type SectionDeps = {
   master: Master
   burst: Burst
   burstState: BurstState
+  binary: import('../three/binaryConstellation').BinaryConstellation
+  binaryState: BinaryState
 }
 
 type Entry = {
@@ -56,6 +60,16 @@ const ENTRIES: Entry[] = [
         state: d.burstState,
         burst: d.burst,
         shardCount: d.motion.settings.burstShards,
+      }),
+  },
+  {
+    id: 'constellation',
+    snippet: BINARY_CONSTELLATION_SNIPPET,
+    create: (c, d) =>
+      createBinaryConstellationSection({
+        ...c,
+        binary: d.binary,
+        state: d.binaryState,
       }),
   },
 ]

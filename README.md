@@ -2,9 +2,10 @@
 
 **→ https://cazemoises.github.io/bobaiona/**
 
-Vitrine de animação com [anime.js v4](https://animejs.com) e Three.js. Página
-de rolagem única: um instrumento 3D se monta em estágios conforme você rola, e
-cada seção demonstra uma técnica diferente da lib.
+Experiência romântica interativa com [anime.js v4](https://animejs.com) e
+Three.js. Página de rolagem única: uma constelação binária se revela em
+estágios conforme você rola, culminando em um coração formado por partículas.
+As demonstrações técnicas originais continuam disponíveis como laboratório.
 
 ```bash
 npm install
@@ -42,6 +43,7 @@ Em **Settings → Pages**, a origem precisa estar em **GitHub Actions**.
 | 4 | `onScroll()` sincronizado | `src/master.ts` + `src/sections/04-scrollsync.ts` | A timeline mestra vive em `master.ts`; a seção só a **expõe**, com rótulos ligados às peças 3D e um playhead |
 | 5 | Timeline coreografada | `src/sections/05-timeline.ts` | `createTimeline` com labels e offsets relativos (`'<-=200'`, `'+=120'`), um easing por beat |
 | 6 | `random()` + stagger em massa | `src/sections/06-burst.ts` + `src/three/burst.ts` | Valores por alvo via função (`x: () => utils.random(...)`), partículas 3D e resposta de luz na mesma timeline |
+| 7 | Revelação de constelação binária | `src/sections/07-binary-constellation.ts` + `src/three/binaryConstellation.ts` | Duas estrelas orbitais, clusters de memórias e transição configurável de partículas para um coração |
 
 ## Como a cena está organizada
 
@@ -52,6 +54,8 @@ Em **Settings → Pages**, a origem precisa estar em **GitHub Actions**.
 | `src/three/orrery.ts` | O instrumento: núcleo, gaiola, anéis, nós, halo, sombra |
 | `src/three/post.ts` | `EffectComposer` + `UnrealBloomPass`. Devolve `null` quando o tier não tem bloom |
 | `src/three/burst.ts` | Partículas do burst e a casca emissiva do flash |
+| `src/three/binaryConstellation.ts` | Estrelas binárias, trilhas, clusters e formação de partículas |
+| `src/three/binaryConstellationMath.ts` | Matemática pura de órbita, crescimento e alvos de partículas |
 | `src/core/motion.ts` | `prefers-reduced-motion` e detecção de tier |
 | `src/core/cardTracker.ts` | Lado do card (contínuo) e altura real do card ativo (medida ao vivo), pra câmera seguir |
 | `src/core/tokens.ts` | Paleta e vocabulário de easings |
@@ -139,7 +143,7 @@ Só em `npm run dev`:
 | `?tier=low` / `?tier=mid` / `?tier=high` | Força o tier de performance |
 | `?sync=0.5` | Troca a taxa de catch-up do scroll |
 
-`window.__bobaiona` expõe stage, orrery, master e estado do burst.
+`window.__bobaiona` expõe stage, orrery, master, binary e estados das cenas.
 
 ## Degradação e acessibilidade
 

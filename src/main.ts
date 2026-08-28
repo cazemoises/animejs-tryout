@@ -7,10 +7,11 @@ import { createMotionProfile } from './core/motion'
 import { createStage } from './three/stage'
 import { createOrrery } from './three/orrery'
 import { createBurst } from './three/burst'
+import { createBinaryConstellation } from './three/binaryConstellation'
 import { createPost, type Post } from './three/post'
 import { createMaster } from './master'
 import { createCardTracker } from './core/cardTracker'
-import { mountSections, type BurstState } from './sections'
+import { mountSections, type BinaryState, type BurstState } from './sections'
 
 const canvas = document.querySelector<HTMLCanvasElement>('#stage')
 const app = document.querySelector<HTMLElement>('#app')
@@ -30,6 +31,7 @@ const motion = createMotionProfile(
 const stage = createStage(canvas, motion.settings, { debug })
 const orrery = createOrrery(motion.settings)
 const burst = createBurst(motion.settings)
+const binary = createBinaryConstellation(motion.settings)
 
 stage.content.add(orrery.root)
 stage.content.add(burst.group)
@@ -42,6 +44,7 @@ stage.content.rotation.set(-0.3, 0, 0.1)
 // would fit the camera to an object that is not there yet.
 stage.measureContent()
 orrery.collapse()
+stage.content.add(binary.group)
 
 // Dev affordance: `?sync=0.5` to feel out the scroll catch-up rate live.
 const syncOverride = import.meta.env.DEV ? Number(params.get('sync')) : Number.NaN
@@ -63,6 +66,7 @@ const cards = createCardTracker(app)
  * animation.
  */
 const burstState: BurstState = { progress: 0, flash: 0 }
+const binaryState: BinaryState = { stage: 0, dolly: 1 }
 
 let post: Post | null = createPost(stage, motion.settings)
 
@@ -73,6 +77,8 @@ const sections = mountSections({
   master,
   burst,
   burstState,
+  binary,
+  binaryState,
 })
 
 // Splitting text and building demos changes section heights, so the card
@@ -98,6 +104,7 @@ stage.onFrame((delta, elapsed) => {
     stage.applySettings(motion.settings)
     orrery.applySettings(motion.settings)
     burst.applySettings(motion.settings)
+    binary.applySettings(motion.settings)
     if (!motion.settings.bloom && post) {
       post.dispose()
       post = null
@@ -119,8 +126,10 @@ stage.onFrame((delta, elapsed) => {
   orrery.spin.rotation.y = idleSpin + THREE.MathUtils.degToRad(master.state.spin)
 
   orrery.update(motion.reduced ? 0 : elapsed)
+  binary.setStage(binaryState.stage)
+  binary.update(motion.reduced ? 0 : elapsed)
 
-  stage.setDolly(master.state.dolly)
+  stage.setDolly(master.state.dolly * binaryState.dolly)
   stage.setBackgroundMix(master.state.background)
 
   // Under reduced motion the render loop does not run, so the camera can never
@@ -154,6 +163,8 @@ if (import.meta.env.DEV) {
       sections,
       burst,
       burstState,
+      binary,
+      binaryState,
       get post() {
         return post
       },

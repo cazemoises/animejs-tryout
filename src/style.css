@@ -176,6 +176,37 @@ body {
   background: rgba(77, 225, 232, 0.12);
 }
 
+.demo--heart-infinity {
+  display: grid;
+  justify-items: center;
+}
+
+.heart-infinity {
+  width: min(100%, 16rem);
+  height: auto;
+  overflow: visible;
+}
+
+.heart-infinity__path {
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 0.45rem rgba(255, 179, 71, 0.5));
+}
+
+.heart-infinity__replay {
+  margin-top: 1rem;
+  border: 1px solid rgba(255, 179, 71, 0.35);
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  background: transparent;
+  color: var(--amber);
+  font: inherit;
+  cursor: pointer;
+}
+
 .section--debug-stage .heading {
   color: var(--amber);
   text-shadow: 0 0 1.2rem rgba(255, 179, 71, 0.55);

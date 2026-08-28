@@ -45,6 +45,7 @@ Em **Settings → Pages**, a origem precisa estar em **GitHub Actions**.
 | 6 | `random()` + stagger em massa | `src/sections/06-burst.ts` + `src/three/burst.ts` | Valores por alvo via função (`x: () => utils.random(...)`), partículas 3D e resposta de luz na mesma timeline |
 | 7 | Revelação de constelação binária | `src/sections/07-binary-constellation.ts` + `src/three/binaryConstellation.ts` | Duas estrelas orbitais, clusters de memórias e transição configurável de partículas para um coração |
 | 8 | Mensagem com física de mola | `src/sections/08-spring-message.ts` + `src/content/messages.ts` | Palavras entram com `spring({ stiffness, damping })`, stagger e botão de replay |
+| 9 | Coração → infinito | `src/sections/09-heart-infinity-morph.ts` + `src/sections/heartInfinityPaths.ts` | `svg.createDrawable` desenha o coração e `svg.morphTo` transforma o mesmo path em infinito |
 
 ## Como a cena está organizada
 
@@ -61,6 +62,7 @@ Em **Settings → Pages**, a origem precisa estar em **GitHub Actions**.
 | `src/core/cardTracker.ts` | Lado do card (contínuo) e altura real do card ativo (medida ao vivo), pra câmera seguir |
 | `src/core/tokens.ts` | Paleta e vocabulário de easings |
 | `src/content/messages.ts` | Placeholder isolado da mensagem romântica |
+| `src/sections/heartInfinityPaths.ts` | Paths paramétricos com pontos compatíveis para o morph |
 
 ## Três decisões que não são óbvias no código
 
@@ -151,6 +153,10 @@ Só em `npm run dev`:
 Para revisar a nova seção de mensagem, rode `npm run dev` e role até
 **Uma mensagem**. O botão **rejouvar** reinicia a animação sem recarregar a
 página. O texto editável fica em `src/content/messages.ts`.
+
+Para revisar a seção **Para sempre**, role até ela e use o botão **repetir** para
+refazer o desenho e o morph. Ela também respeita `prefers-reduced-motion`,
+mostrando o símbolo final sem a animação.
 
 ## Degradação e acessibilidade
 

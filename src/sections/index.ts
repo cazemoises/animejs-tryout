@@ -13,6 +13,7 @@ import { createTimelineSection, TIMELINE_SNIPPET } from './05-timeline'
 import { createBurstSection, BURST_SNIPPET, type BurstState } from './06-burst'
 import { createBinaryConstellationSection, BINARY_CONSTELLATION_SNIPPET, type BinaryState } from './07-binary-constellation'
 import { createSpringMessageSection, SPRING_MESSAGE_SNIPPET } from './08-spring-message'
+import { createHeartInfinitySection, HEART_INFINITY_SNIPPET } from './09-heart-infinity-morph'
 import type { Section, SectionContext } from './types'
 
 export type { BurstState }
@@ -77,6 +78,11 @@ const ENTRIES: Entry[] = [
     id: 'spring-message',
     snippet: SPRING_MESSAGE_SNIPPET,
     create: (c) => createSpringMessageSection(c),
+  },
+  {
+    id: 'heart-infinity',
+    snippet: HEART_INFINITY_SNIPPET,
+    create: (c) => createHeartInfinitySection(c),
   },
 ]
 

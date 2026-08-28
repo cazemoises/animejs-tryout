@@ -8,9 +8,9 @@ export default defineConfig({
    * dev and production from diverging on exactly the thing that only breaks in
    * production.
    *
-   * Dev URL becomes http://localhost:5173/animejs-tryout/
+   * Dev URL becomes http://localhost:5173/bobaiona/
    */
-  base: '/animejs-tryout/',
+  base: '/bobaiona/',
   build: {
     target: 'es2022',
   },

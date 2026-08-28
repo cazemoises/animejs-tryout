@@ -1,4 +1,4 @@
-# ORRERY — vitrine de animação com anime.js v4 + Three.js
+# bobaiona — vitrine de animação com anime.js v4 + Three.js
 
 Data: 2026-08-07
 Status: aprovado

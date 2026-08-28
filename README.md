@@ -1,6 +1,6 @@
-# ORRERY
+# bobaiona
 
-**→ https://cazemoises.github.io/animejs-tryout/**
+**→ https://cazemoises.github.io/bobaiona/**
 
 Vitrine de animação com [anime.js v4](https://animejs.com) e Three.js. Página
 de rolagem única: um instrumento 3D se monta em estágios conforme você rola, e
@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-O dev server sobe em `http://localhost:5173/animejs-tryout/` — o `base` do Vite
+O dev server sobe em `http://localhost:5173/bobaiona/` — o `base` do Vite
 é o mesmo em dev e em produção, de propósito, para que um path que só quebra
 sob sub-path não passe despercebido em desenvolvimento.
 
@@ -139,7 +139,7 @@ Só em `npm run dev`:
 | `?tier=low` / `?tier=mid` / `?tier=high` | Força o tier de performance |
 | `?sync=0.5` | Troca a taxa de catch-up do scroll |
 
-`window.__orrery` expõe stage, orrery, master e estado do burst.
+`window.__bobaiona` expõe stage, orrery, master e estado do burst.
 
 ## Degradação e acessibilidade
 

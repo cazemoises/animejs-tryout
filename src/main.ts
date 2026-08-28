@@ -145,7 +145,7 @@ stage.onFrame((delta, elapsed) => {
 
 if (import.meta.env.DEV) {
   Object.assign(window, {
-    __orrery: {
+    __bobaiona: {
       stage,
       orrery,
       master,

@@ -4,6 +4,7 @@ import {
   growOrbitRadius,
   transitionParticlesToTargets,
   type Point3,
+  sectionProgress,
 } from './binaryConstellationMath'
 
 describe('binary constellation math', () => {
@@ -33,5 +34,11 @@ describe('binary constellation math', () => {
       { x: -1, y: 0.5, z: 0 },
       { x: 2, y: 0, z: 1.5 },
     ])
+  })
+
+  it('maps a section rectangle to continuous 0..1 scroll progress', () => {
+    expect(sectionProgress(900, 900, 900)).toBe(0)
+    expect(sectionProgress(0, 900, 900)).toBe(0.5)
+    expect(sectionProgress(-900, 900, 900)).toBe(1)
   })
 })

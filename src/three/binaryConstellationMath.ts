@@ -1,5 +1,10 @@
 export type Point3 = { x: number; y: number; z: number }
 
+export function sectionProgress(sectionTop: number, sectionHeight: number, viewportHeight: number): number {
+  if (sectionHeight <= 0 || viewportHeight <= 0) return 0
+  return Math.min(1, Math.max(0, (viewportHeight - sectionTop) / (viewportHeight + sectionHeight)))
+}
+
 export function growOrbitRadius(initialRadius: number, growthPerSecond: number, elapsed: number): number {
   return Math.max(initialRadius, initialRadius + Math.max(0, elapsed) * growthPerSecond)
 }

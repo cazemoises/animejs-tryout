@@ -144,6 +144,11 @@ body {
   background: radial-gradient(circle, rgba(77, 225, 232, 0.08), transparent 68%);
 }
 
+.section--debug-stage .heading {
+  color: var(--amber);
+  text-shadow: 0 0 1.2rem rgba(255, 179, 71, 0.55);
+}
+
 /* 01 — stagger grid */
 
 .demo--grid {

@@ -66,7 +66,7 @@ const cards = createCardTracker(app)
  * animation.
  */
 const burstState: BurstState = { progress: 0, flash: 0 }
-const binaryState: BinaryState = { stage: 0, dolly: 1 }
+const binaryState: BinaryState = { stage: 0, dolly: 1, climax: 0 }
 
 let post: Post | null = createPost(stage, motion.settings)
 
@@ -127,6 +127,7 @@ stage.onFrame((delta, elapsed) => {
 
   orrery.update(motion.reduced ? 0 : elapsed)
   binary.setStage(binaryState.stage)
+  binary.setClimax(binaryState.climax)
   binary.update(motion.reduced ? 0 : elapsed)
 
   stage.setDolly(master.state.dolly * binaryState.dolly)

@@ -142,6 +142,7 @@ Só em `npm run dev`:
 | `?debug` | Desenha a bounding sphere usada pelo enquadramento |
 | `?tier=low` / `?tier=mid` / `?tier=high` | Força o tier de performance |
 | `?sync=0.5` | Troca a taxa de catch-up do scroll |
+| `?debugStage=1\|2\|3` | Em dev, fixa a seção 07 diretamente no estágio escolhido |
 
 `window.__bobaiona` expõe stage, orrery, master, binary e estados das cenas.
 

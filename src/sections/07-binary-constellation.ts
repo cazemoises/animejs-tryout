@@ -2,6 +2,7 @@ import { createTimeline } from 'animejs'
 import { ease } from '../core/tokens'
 import type { BinaryConstellation } from '../three/binaryConstellation'
 import type { Section, SectionContext } from './types'
+import { sectionProgress } from '../three/binaryConstellationMath'
 
 export const BINARY_CONSTELLATION_SNIPPET = `
 timeline
@@ -13,6 +14,7 @@ timeline
 export type BinaryState = {
   stage: number
   dolly: number
+  climax: number
 }
 
 export type BinarySectionContext = SectionContext & {
@@ -31,32 +33,46 @@ export function createBinaryConstellationSection({
 
   const timeline = createTimeline({ autoplay: false })
   timeline
-    .add(state, { stage: [0, 1], duration: 1800, ease: ease.glow })
-    .add(state, { stage: [1, 2], duration: 1800, ease: ease.arrive }, '-=200')
-    .add(state, { stage: [2, 3], duration: 2200, ease: ease.arrive }, '-=200')
-    .add(state, { dolly: [1, 1.55], duration: 5800, ease: 'inOutSine' }, 0)
+    .add(state, { stage: [0, 1], duration: 2400, ease: ease.glow }, 0)
+    .add(state, { stage: [1, 2], duration: 2400, ease: ease.arrive }, 2400)
+    .add(state, { stage: [2, 3], duration: 2400, ease: ease.arrive }, 4800)
+    .add(state, { dolly: [1, 1.55], duration: 7200, ease: 'inOutSine' }, 0)
+    .add(state, { climax: [0, 1, 0], duration: 2400, ease: ease.glow }, 4800)
 
-  const observer = motion.reduced ? null : new IntersectionObserver(
-    (entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return
-      binary.reveal()
-      timeline.play()
-      observer?.disconnect()
-    },
-    { threshold: 0.2 },
-  )
+  const debugStage = import.meta.env.DEV
+    ? Number(new URLSearchParams(location.search).get('debugStage'))
+    : Number.NaN
+  const debugProgress = debugStage === 1 ? 0.2 : debugStage === 2 ? 0.55 : debugStage === 3 ? 0.92 : null
+  let activeProgress = 0
 
-  if (motion.reduced) {
+  const applyProgress = (progress: number): void => {
+    activeProgress = Math.min(1, Math.max(0, progress))
     binary.reveal()
-    timeline.seek(timeline.duration)
+    timeline.seek(activeProgress * timeline.duration)
+  }
+
+  const onScroll = (): void => {
+    if (motion.reduced || debugProgress !== null) return
+    const rect = root.getBoundingClientRect()
+    applyProgress(sectionProgress(rect.top, rect.height, window.innerHeight))
+  }
+
+  if (debugProgress !== null) {
+    applyProgress(debugProgress)
+    root.classList.add('section--debug-stage')
+  } else if (motion.reduced) {
+    applyProgress(1)
   } else {
-    observer?.observe(root)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll, { passive: true })
   }
 
   mount.setAttribute('aria-label', 'revelação da constelação binária')
   return {
     destroy() {
-      observer?.disconnect()
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
       timeline.pause()
       binary.hide()
       binary.dispose()

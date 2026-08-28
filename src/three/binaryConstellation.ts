@@ -19,6 +19,7 @@ export type BinaryConstellation = {
   group: THREE.Group
   update(elapsed: number): void
   setStage(stage: number): void
+  setClimax(amount: number): void
   reveal(): void
   hide(): void
   applySettings(settings: TierSettings): void
@@ -119,6 +120,7 @@ export function createBinaryConstellation(settings: TierSettings): BinaryConstel
   group.add(excludeFromFraming(formation))
 
   let currentStage = 0
+  let climax = 0
   let currentFormation = transitionParticlesToTargets(freeParticles, formationTargets, 0)
   let lastElapsed = 0
 
@@ -145,12 +147,16 @@ export function createBinaryConstellation(settings: TierSettings): BinaryConstel
       if (currentStage >= 2) {
         const nextProgress = Math.min(1, Math.max(0, currentStage - 2))
         currentFormation = transitionParticlesToTargets(freeParticles, formationTargets, nextProgress)
-        updateCloud(formation, currentFormation, nextProgress * 0.95)
+        updateCloud(formation, currentFormation, nextProgress * (0.72 + climax * 0.28))
+        formation.scale.setScalar(1 + climax * 0.12)
       }
       if (delta > 0) orbitLines.forEach((line) => line.rotation.z += delta * 0.04)
     },
     setStage(stage) {
       currentStage = Math.min(3, Math.max(0, stage))
+    },
+    setClimax(amount) {
+      climax = Math.min(1, Math.max(0, amount))
     },
     reveal() {
       group.visible = true

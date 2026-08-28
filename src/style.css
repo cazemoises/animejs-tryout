@@ -144,6 +144,38 @@ body {
   background: radial-gradient(circle, rgba(77, 225, 232, 0.08), transparent 68%);
 }
 
+.demo--spring-message {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em 0.5em;
+  min-height: 5.5rem;
+  align-content: center;
+  font-size: clamp(1.35rem, 3vw, 2.2rem);
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.spring-message__word {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+.spring-message__replay {
+  margin-top: 1rem;
+  border: 1px solid rgba(77, 225, 232, 0.35);
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  background: transparent;
+  color: var(--cyan);
+  font: inherit;
+  cursor: pointer;
+}
+
+.spring-message__replay:hover,
+.spring-message__replay:focus-visible {
+  background: rgba(77, 225, 232, 0.12);
+}
+
 .section--debug-stage .heading {
   color: var(--amber);
   text-shadow: 0 0 1.2rem rgba(255, 179, 71, 0.55);

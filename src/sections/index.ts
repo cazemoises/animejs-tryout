@@ -12,6 +12,7 @@ import { createScrollSyncSection, SCROLLSYNC_SNIPPET } from './04-scrollsync'
 import { createTimelineSection, TIMELINE_SNIPPET } from './05-timeline'
 import { createBurstSection, BURST_SNIPPET, type BurstState } from './06-burst'
 import { createBinaryConstellationSection, BINARY_CONSTELLATION_SNIPPET, type BinaryState } from './07-binary-constellation'
+import { createSpringMessageSection, SPRING_MESSAGE_SNIPPET } from './08-spring-message'
 import type { Section, SectionContext } from './types'
 
 export type { BurstState }
@@ -71,6 +72,11 @@ const ENTRIES: Entry[] = [
         binary: d.binary,
         state: d.binaryState,
       }),
+  },
+  {
+    id: 'spring-message',
+    snippet: SPRING_MESSAGE_SNIPPET,
+    create: (c) => createSpringMessageSection(c),
   },
 ]
 

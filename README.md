@@ -44,6 +44,7 @@ Em **Settings → Pages**, a origem precisa estar em **GitHub Actions**.
 | 5 | Timeline coreografada | `src/sections/05-timeline.ts` | `createTimeline` com labels e offsets relativos (`'<-=200'`, `'+=120'`), um easing por beat |
 | 6 | `random()` + stagger em massa | `src/sections/06-burst.ts` + `src/three/burst.ts` | Valores por alvo via função (`x: () => utils.random(...)`), partículas 3D e resposta de luz na mesma timeline |
 | 7 | Revelação de constelação binária | `src/sections/07-binary-constellation.ts` + `src/three/binaryConstellation.ts` | Duas estrelas orbitais, clusters de memórias e transição configurável de partículas para um coração |
+| 8 | Mensagem com física de mola | `src/sections/08-spring-message.ts` + `src/content/messages.ts` | Palavras entram com `spring({ stiffness, damping })`, stagger e botão de replay |
 
 ## Como a cena está organizada
 
@@ -59,6 +60,7 @@ Em **Settings → Pages**, a origem precisa estar em **GitHub Actions**.
 | `src/core/motion.ts` | `prefers-reduced-motion` e detecção de tier |
 | `src/core/cardTracker.ts` | Lado do card (contínuo) e altura real do card ativo (medida ao vivo), pra câmera seguir |
 | `src/core/tokens.ts` | Paleta e vocabulário de easings |
+| `src/content/messages.ts` | Placeholder isolado da mensagem romântica |
 
 ## Três decisões que não são óbvias no código
 
@@ -145,6 +147,10 @@ Só em `npm run dev`:
 | `?debugStage=1\|2\|3` | Em dev, fixa a seção 07 diretamente no estágio escolhido |
 
 `window.__bobaiona` expõe stage, orrery, master, binary e estados das cenas.
+
+Para revisar a nova seção de mensagem, rode `npm run dev` e role até
+**Uma mensagem**. O botão **rejouvar** reinicia a animação sem recarregar a
+página. O texto editável fica em `src/content/messages.ts`.
 
 ## Degradação e acessibilidade
 
